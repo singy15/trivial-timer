@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>trivial-timer</title>
+  </head>
+
+  <script id="worker1" type="javascript/worker">
+    let alarms = [];
+
+    self.addEventListener("message", (e) => {
+      alarms = JSON.parse(e.data.alarms);
+
+      let interval = setInterval(() => {
+        let d = new Date(Date.parse(alarms[0].time));
+        let now = new Date();
+        if(d < now) {
+          console.log(alarms.shift());
+          let options = {
+            body: "mint2",
+            // icon: ""
+          };
+          new Notification(d.toLocaleString(), options);
+          self.postMessage({ alarms: JSON.stringify(alarms) });
+        }
+
+        if(alarms.length === 0) {
+          clearInterval(interval);
+          console.log("worker stopped");
+        }
+      }, 1000);
+    });
+  </script>
+
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
